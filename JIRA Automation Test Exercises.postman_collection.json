@@ -1,0 +1,881 @@
+{
+	"info": {
+		"_postman_id": "412a6b1a-d234-4f9f-88ac-b4b04e503c78",
+		"name": "JIRA Automation Test Exercises",
+		"description": "Les API de JIRA offrent de nombreuses possibilités pour automatiser les  \ntests et valider le fonctionnement de votre instance JIRA. Voici  \nquelques exemples de tests que vous pouvez automatiser :\n\n1. Tests de gestion des tickets (Issues) :\n    \n    1. Création de tickets :\n        \n        1. Vérifier que vous pouvez créer des tickets avec différents types, priorités, et champs personnalisés.\n            \n        2. Valider que les données du ticket créé correspondent à celles envoyées dans la requête API.\n            \n    2. Lecture de tickets :\n        \n        1. Récupérer les détails d'un ticket spécifique et vérifier que les données renvoyées sont correctes.\n            \n        2. Tester la récupération de tickets en utilisant différents filtres et critères de recherche.\n            \n    3. Mise à jour de tickets :\n        \n        1. Modifier les champs d'un ticket existant (statut, assigné, etc.) et vérifier que les modifications sont bien enregistrées.\n            \n        2. Tester les mises à jour avec des données invalides pour s'assurer que l'API renvoie des erreurs appropriées.\n            \n    4. Suppression de tickets :\n        \n        1. Supprimer un ticket et vérifier qu'il n'est plus accessible via l'API.\n            \n        2. Tester la suppression de tickets avec des autorisations différentes.\n            \n    5. Tests de transition de statuts :\n        \n        1. Vérifier que les transitions de status sont possibles et respectent le workflow.\n            \n        2. S'assurer que les transitions de status non-autorisées sont rejetées par l'api.\n            \n    6. Tests de gestion des pièces jointes :\n        \n        1. Ajouter et supprimer des pièces jointes à des tickets.\n            \n        2. Vérifier que les pièces jointes sont correctement stockées et accessibles.\n            \n2. Tests de gestion des utilisateurs et des groupes :\n    \n    1. Création d'utilisateurs :\n        \n        1. Créer de nouveaux utilisateurs via l'API et vérifier qu'ils sont bien ajoutés à JIRA.\n            \n    2. Récupération d'informations utilisateur :\n        \n        1. Récupérer les détails d'un utilisateur spécifique et vérifier que les données renvoyées sont correctes.\n            \n    3. Gestion des groupes :\n        \n        1. Créer, modifier et supprimer des groupes d'utilisateurs.\n            \n        2. Ajouter et supprimer des utilisateurs de groupes.\n            \n3. Tests de gestion des projets :\n    \n    1. Création de projets :\n        \n        1. Créer de nouveaux projets avec différents types et configurations.\n            \n        2. Vérifier que les projets sont correctement créés et accessibles.\n            \n    2. Récupération d'informations de projet :\n        \n        1. Récupérer les détails d'un projet spécifique et vérifier que les données renvoyées sont correctes.\n            \n    3. Gestion des versions et des composants :\n        \n        1. Créer, modifier et supprimer des versions et des composants de projet.\n            \n4. Tests de gestion des workflows :\n    \n    1. Validation des workflows :\n        \n        1. Vérifier que les workflows sont correctement configurés et appliqués aux tickets.\n            \n        2. Tester les transitions de statut en fonction des conditions définies dans les workflows.\n            \n5. Tests de sécurité :\n    \n    1. Tests d'authentification et d'autorisation :\n        \n        1. Vérifier que seuls les utilisateurs autorisés peuvent accéder aux ressources de l'API.\n            \n        2. Tester différents rôles d'utilisateur et s'assurer que les autorisations sont appliquées correctement.\n            \n        3. Tester les accès avec des tokens expirés ou invalides\n            \n\nOutils et techniques :  \nPour automatiser ces tests, vous pouvez utiliser des outils tels que Postman, cURL, ou des frameworks de tests API comme Rest Assured (pour Java) ou Pytest (pour Python). Vous pouvez également utiliser l'API REST de JIRA directement dans vos scripts de test.\n\nEn automatisant ces tests, vous pouvez vous assurer que votre instance JIRA fonctionne correctement et que les modifications apportées n'ont pas d'impact négatif sur les fonctionnalités existantes.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41173988"
+	},
+	"item": [
+		{
+			"name": "Tests de gestion des tickets (Issues)",
+			"item": [
+				{
+					"name": "Création de tickets",
+					"item": [
+						{
+							"name": "Get all issue types for user",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Added a check for empty array in the response\r",
+											"pm.test(\"Get all issue types\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const jsonData = pm.response.json();\r",
+											"console.log(jsonData);\r",
+											"const issueType_names = jsonData.map((n)=>n.name);\r",
+											"console.log(issueType_names);\r",
+											"// \r",
+											"pm.collectionVariables.set('issueType_id', jsonData[issueType_names.indexOf(pm.iterationData.get('issuetype'))].id)\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"var template = `\r",
+											"<style type=\"text/css\">\r",
+											"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+											"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+											"    .tftable tr {background-color:#ffffff;}\r",
+											"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+											"    .tftable tr:hover {background-color:#e0ffff;}\r",
+											"</style>\r",
+											"\r",
+											"<table class=\"tftable\" border=\"1\">\r",
+											"    <tr>\r",
+											"        <th>ID</th>\r",
+											"        <th>Name</th>\r",
+											"        <th>Description</th>\r",
+											"        <th>Subtask</th>\r",
+											"    </tr>\r",
+											"    \r",
+											"    {{#each response}}\r",
+											"        <tr>\r",
+											"            <td>{{id}}</td>\r",
+											"            <td>{{name}}</td>\r",
+											"            <td>{{description}}</td>\r",
+											"            <td>{{subtask}}</td>\r",
+											"        </tr>\r",
+											"    {{/each}}\r",
+											"</table>\r",
+											"`;\r",
+											"\r",
+											"function constructVisualizerPayload() {\r",
+											"    return {response: pm.response.json()}\r",
+											"}\r",
+											"\r",
+											"pm.visualizer.set(template, constructVisualizerPayload());"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issuetype",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issuetype"
+									]
+								},
+								"description": "Obtenir les types de billet dans le but d'en extraire les noms qui seront utilisés dans la requête POST"
+							},
+							"response": []
+						},
+						{
+							"name": "Get all issue priorities",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Get all issue priorities\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const jsonData = pm.response.json();\r",
+											"console.log(jsonData);\r",
+											"\r",
+											"const issuePriority_names = jsonData.map(n => n.name);\r",
+											"console.log(issuePriority_names)\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"var template = `\r",
+											"<style type=\"text/css\">\r",
+											"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+											"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+											"    .tftable tr {background-color:#ffffff;}\r",
+											"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+											"    .tftable tr:hover {background-color:#e0ffff;}\r",
+											"</style>\r",
+											"\r",
+											"<table class=\"tftable\" border=\"1\">\r",
+											"    <tr>\r",
+											"        <th>ID</th>\r",
+											"        <th>Name</th>\r",
+											"        <th>Description</th>\r",
+											"    </tr>\r",
+											"    \r",
+											"    {{#each response}}\r",
+											"        <tr>\r",
+											"            <td>{{id}}</td>\r",
+											"            <td>{{name}}</td>\r",
+											"            <td>{{description}}</td>\r",
+											"        </tr>\r",
+											"    {{/each}}\r",
+											"</table>\r",
+											"`;\r",
+											"\r",
+											"function constructVisualizerPayload() {\r",
+											"    return {response: pm.response.json()}\r",
+											"}\r",
+											"\r",
+											"pm.visualizer.set(template, constructVisualizerPayload());"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/priority",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"priority"
+									]
+								},
+								"description": "Obtenir les priorités dans le but d'en extraire les noms qui seront utilisés dans la requête POST"
+							},
+							"response": []
+						},
+						{
+							"name": "Get projects",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Get all projects\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const jsonData = pm.response.json();\r",
+											"console.log(jsonData);\r",
+											"\r",
+											"const project_keys = jsonData.map(k => k.key);\r",
+											"console.log(project_keys)\r",
+											"\r",
+											"// In jsonData, get the id of the first occurence of the priority with key specified in my json file\r",
+											"pm.collectionVariables.set('projectKey', pm.variables.get('project'));\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"var template = `\r",
+											"<style type=\"text/css\">\r",
+											"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+											"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+											"    .tftable tr {background-color:#ffffff;}\r",
+											"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+											"    .tftable tr:hover {background-color:#e0ffff;}\r",
+											"</style>\r",
+											"\r",
+											"<table class=\"tftable\" border=\"1\">\r",
+											"    <tr>\r",
+											"        <th>ID</th>\r",
+											"        <th>Key</th>\r",
+											"        <th>Name</th>\r",
+											"        <th>Project Type Key</th>\r",
+											"        <th>Is Private</th>\r",
+											"    </tr>\r",
+											"    \r",
+											"    {{#each response}}\r",
+											"        <tr>\r",
+											"            <td>{{id}}</td>\r",
+											"            <td>{{key}}</td>\r",
+											"            <td>{{name}}</td>\r",
+											"            <td>{{projectTypeKey}}</td>\r",
+											"            <td>{{isPrivate}}</td>\r",
+											"        </tr>\r",
+											"    {{/each}}\r",
+											"</table>\r",
+											"`;\r",
+											"\r",
+											"function constructVisualizerPayload() {\r",
+											"    return {response: pm.response.json()}\r",
+											"}\r",
+											"\r",
+											"pm.visualizer.set(template, constructVisualizerPayload());"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/project",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"project"
+									]
+								},
+								"description": "Obtenir les projets dans le but d'en extraire les clés qui seront utilisées dans la requête POST"
+							},
+							"response": []
+						},
+						{
+							"name": "Get all users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Get all users\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const jsonData = pm.response.json();\r",
+											"console.log(jsonData);\r",
+											"\r",
+											"const users = jsonData.map(u => u.displayName);\r",
+											"console.log(users)\r",
+											"\r",
+											"// In jsonData, get the id of the first occurence of the priority with key specified in my json file\r",
+											"pm.collectionVariables.set('reporterId', jsonData[users.indexOf(pm.iterationData.get(\"reporter\"))].accountId);\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/users/search",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"users",
+										"search"
+									]
+								},
+								"description": "Obtenir les utilisateurs dans le but d'en extraire un, dont l'ID sera utilisé dans la requête POST"
+							},
+							"response": []
+						},
+						{
+							"name": "Create issue",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const jsonData = pm.response.json()\r",
+											"\r",
+											"pm.test(\"Issue created\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"    console.log(jsonData.key + ' added')\r",
+											"});\r",
+											"\r",
+											"pm.collectionVariables.set('issueId', jsonData.id);\r",
+											" "
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fields\": {\r\n        \"issuetype\": {\r\n            \"id\": {{issueType_id}}\r\n        },\r\n        \"project\": {\r\n            \"key\": \"{{projectKey}}\"\r\n        },\r\n        \"reporter\": {\r\n            \"id\": \"{{reporterId}}\"\r\n        },\r\n        \"summary\": \"{{$randomPhrase}}\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue"
+									]
+								},
+								"description": "Vérifier que vous pouvez créer des tickets de types variés."
+							},
+							"response": []
+						},
+						{
+							"name": "Get created issue",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();\r",
+											"console.log(jsonData);\r",
+											"console.log(jsonData.fields.issuetype.id);\r",
+											"console.log(jsonData.fields.issuetype.name)\r",
+											"console.log(jsonData.fields.priority.id)\r",
+											"console.log(jsonData.fields.reporter.accountId);\r",
+											"console.log(jsonData.fields.summary);\r",
+											"\r",
+											"test_issueCreated = (testName, issueName) => {\r",
+											"    pm.test(testName, function(){\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(issueName);\r",
+											"    }) \r",
+											"};\r",
+											"check_issueCreated = (issueType) => {\r",
+											"    switch(issueType){\r",
+											"    case \"Bug\":\r",
+											"        test_issueCreated(\"Bug created\", \"Bug\");\r",
+											"        break;\r",
+											"    case \"Epic\":\r",
+											"        test_issueCreated(\"Epic created\", \"Epic\");\r",
+											"        break;\r",
+											"    case \"Story\":\r",
+											"        test_issueCreated(\"Story created\", \"Story\");\r",
+											"        break;\r",
+											"    case \"New Feature\":\r",
+											"        test_issueCreated(\"New Feature created\", \"New Feature\");\r",
+											"        break;\r",
+											"    case \"Support\":\r",
+											"        test_issueCreated(\"Support created\", \"Support\");\r",
+											"        break;\r",
+											"    case \"Developer escalation\":\r",
+											"        test_issueCreated(\"Dev escal created\", \"Developer escalation\");\r",
+											"        break;\r",
+											"    default:\r",
+											"        test_issueCreated(\"Unknown\", \"Unknown\")\r",
+											"    }\r",
+											"};\r",
+											"check_issueCreated(jsonData.fields.issuetype.name);\r",
+											"\r",
+											"/*\r",
+											"pm.test(\"Bug issue created\", function () {\r",
+											"    pm.expect(jsonData.fields.issuetype.name).to.eql(\"Bug\");\r",
+											"    pm.expect(jsonData.fields.project.key).to.eql(\"SCRUM\");\r",
+											"});\r",
+											"pm.test(\"Epic issue created\", function () {\r",
+											"    pm.expect(jsonData.fields.issuetype.name).to.eql(\"Epic\");\r",
+											"    pm.expect(jsonData.fields.project.key).to.eql(\"LEARNJIRA\");\r",
+											"});\r",
+											"pm.test(\"Story issue created\", function () {\r",
+											"    pm.expect(jsonData.fields.issuetype.name).to.eql(\"Story\");\r",
+											"    pm.expect(jsonData.fields.project.key).to.eql(\"SCRUM\");\r",
+											"});\r",
+											"pm.test(\"New Feature issue created\", function () {\r",
+											"    pm.expect(jsonData.fields.issuetype.name).to.eql(\"New Feature\");\r",
+											"    pm.expect(jsonData.fields.project.key).to.eql(\"CS\");\r",
+											"});\r",
+											" pm.test(\"Support issue created\", function () {\r",
+											"    pm.expect(jsonData.fields.issuetype.name).to.eql(\"Support\");\r",
+											"    pm.expect(jsonData.fields.project.key).to.eql(\"CS\");\r",
+											"});\r",
+											" pm.test(\"Dev escal issue created\", function () {\r",
+											"    pm.expect(jsonData.fields.issuetype.name).to.eql(\"Developer escalation\");\r",
+											"    pm.expect(jsonData.fields.project.key).to.eql(\"CS\");\r",
+											"});*/\r",
+											"\r",
+											"\r",
+											"/*pm.test(montest, function(){\r",
+											"    switch(jsonData.fields.issuetype.id){\r",
+											"        case '10002':\r",
+											"        test = \"Bug creation\";\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"Bug\");\r",
+											"        break;\r",
+											"        case '10007':\r",
+											"        test = \"Epic creation\";\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"Epic\");\r",
+											"        break;\r",
+											"        case '10003':\r",
+											"        test = \"Story creation\";\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"Story\");\r",
+											"        break;\r",
+											"        case '10011':\r",
+											"        test = 'New Feature creation';\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"New Feature\");\r",
+											"        break;\r",
+											"        case '10006':\r",
+											"        test = 'Task creation';\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"Task\");\r",
+											"        break;\r",
+											"        case '10012':\r",
+											"        test = 'Support creation';\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"Support\");\r",
+											"        break;\r",
+											"        case '10013':\r",
+											"        test = 'Developer escalation creation';\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(\"Developer escalation\");\r",
+											"        break;\r",
+											"        default:\r",
+											"        test = 'Issue created is unknown'\r",
+											"    }\r",
+											"})*/\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"\r",
+											"var template = `\r",
+											"<style type=\"text/css\">\r",
+											"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+											"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+											"    .tftable tr {background-color:#ffffff;}\r",
+											"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+											"    .tftable tr:hover {background-color:#e0ffff;}\r",
+											"</style>\r",
+											"\r",
+											"<table class=\"tftable\" border=\"1\">\r",
+											"    <tr>\r",
+											"        <th>Issue ID</th>\r",
+											"        <th>Key</th>\r",
+											"        <th>Issue Type</th>\r",
+											"        <th>Project Name</th>\r",
+											"        <th>Priority</th>\r",
+											"        <th>Summary</th>\r",
+											"        <th>Reporter</th>\r",
+											"        <th>Created Date</th>\r",
+											"        <th>Updated Date</th>\r",
+											"    </tr>\r",
+											"    <tr>\r",
+											"        <td>{{fields.id}}</td>\r",
+											"        <td>{{fields.key}}</td>\r",
+											"        <td>{{fields.issuetype.name}}</td>\r",
+											"        <td>{{fields.project.name}}</td>\r",
+											"        <td>{{fields.priority.name}}</td>\r",
+											"        <td>{{fields.summary}}</td>\r",
+											"        <td>{{fields.creator.displayName}}</td>\r",
+											"        <td>{{fields.created}}</td>\r",
+											"        <td>{{fields.updated}}</td>\r",
+											"    </tr>\r",
+											"</table>\r",
+											"`;\r",
+											"\r",
+											"function constructVisualizerPayload() {\r",
+											"    var res = pm.response.json();\r",
+											"    var visualizerData = {\r",
+											"        fields: {\r",
+											"            id: res.id,\r",
+											"            key: res.key,\r",
+											"            issuetype: { name: res.fields.issuetype.name },\r",
+											"            project: { name: res.fields.project.name },\r",
+											"            priority: { name: res.fields.priority.name },\r",
+											"            summary: res.fields.summary,\r",
+											"            creator: { displayName: res.fields.creator.displayName },\r",
+											"            created: res.fields.created,\r",
+											"            updated: res.fields.updated\r",
+											"        }\r",
+											"    };\r",
+											"\r",
+											"    return { response: visualizerData };\r",
+											"}\r",
+											"\r",
+											"pm.visualizer.set(template, constructVisualizerPayload());"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{issueId}}",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{issueId}}"
+									]
+								},
+								"description": "Valider que les données du billet créé (type de billet et projet lié) correspondent à celles envoyées dans la requête API."
+							},
+							"response": []
+						}
+					],
+					"description": "1. Vérifier que vous pouvez créer des tickets de types variés.\n    \n2. Valider que les données du ticket créé correspondent à celles envoyées dans la requête API."
+				},
+				{
+					"name": "Lecture de tickets",
+					"item": [
+						{
+							"name": "Get project statuses",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/project/LEARNJIRA/statuses",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"project",
+										"LEARNJIRA",
+										"statuses"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get issue details",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Fixed the ReferenceError by defining the issueName_test variable\r",
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const jsonData = pm.response.json();\r",
+											"console.log(jsonData);\r",
+											"\r",
+											"// Identify and test issue type, then store it in a collection variable\r",
+											"test_issueType = (testName, issueTypeName) => {\r",
+											"    pm.test(testName, function(){\r",
+											"        pm.expect(jsonData.fields.issuetype.name).to.eql(issueTypeName);\r",
+											"    });\r",
+											"}\r",
+											"check_issueType = (issueType) => {\r",
+											"    switch (issueType){\r",
+											"        case \"Task\":\r",
+											"        test_issueType(\"Verify issue = Task\", \"Task\");\r",
+											"        break;\r",
+											"        case \"Bug\":\r",
+											"        test_issueType(\"Verify issue = Bug\", \"Bug\");\r",
+											"        break;\r",
+											"        case \"Story\":\r",
+											"        test_issueType(\"Verify issue = Story\", \"Story\");\r",
+											"        break;\r",
+											"        case \"New Feature\":\r",
+											"        test_issueType(\"Verify issue = New Feature\", \"New Feature\");\r",
+											"        break;\r",
+											"        case \"Support\":\r",
+											"        test_issueType(\"Verify issue = Support\", \"Support\");\r",
+											"        break;\r",
+											"        case \"Developer escalation\":\r",
+											"        test_issueType(\"Verify issue = Developer escalation\", \"Developer escalation\");\r",
+											"        break;\r",
+											"        default:\r",
+											"        test_issueType(\"Issue = unknown\", \"Unknown\");\r",
+											"    }\r",
+											"};\r",
+											"check_issueType(jsonData.fields.issuetype.name);\r",
+											"pm.collectionVariables.set(\"read_issueType\", jsonData.fields.issuetype.name);\r",
+											"\r",
+											"// Set issue assignee\r",
+											"pm.test('assignee is present', function(){\r",
+											"    pm.expect(jsonData.fields.assignee).to.be.oneOf([null,\"Justin N\",\"Jira Outlook\"])\r",
+											"})\r",
+											"pm.collectionVariables.set(\"read_assignee\", jsonData.fields.assignee)\r",
+											"\r",
+											"// Identify and test issue status, then store it in a variable\r",
+											"test_issueStatus = (testName, statusName) => {\r",
+											"    pm.test(testName, function(){\r",
+											"        pm.expect(jsonData.fields.status.name).to.eql(statusName)\r",
+											"    })\r",
+											"};\r",
+											"check_issueStatus = (status)=>{\r",
+											"    switch(status){\r",
+											"        case \"To Do\":\r",
+											"        test_issueStatus(\"Verify issue status = To Do\", \"To Do\");\r",
+											"        break;\r",
+											"        case \"In Progress\":\r",
+											"        test_issueStatus(\"Verify issue status = In progress\", \"In Progress\");\r",
+											"        break;\r",
+											"        case \"Done\":\r",
+											"        test_issueStatus(\"Verify issue status = Done\", \"Done\");\r",
+											"        break;\r",
+											"        default:\r",
+											"        test_issueStatus(\"Issue status = Unknown\", \"Unknown\")\r",
+											"    }\r",
+											"};\r",
+											"check_issueStatus(jsonData.fields.status.name);\r",
+											"pm.collectionVariables.set(\"read_issueStatus\", jsonData.fields.status.name)\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/LEARNJIRA-2",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"LEARNJIRA-2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Set issue type",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Set issue status",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Set issue assignee",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Set issue due date",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Set issue impact",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Comment the issue",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "Get issue assignee",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						}
+					],
+					"description": "1. Récupérer les détails d'un ticket spécifique et vérifier que les données renvoyées sont correctes.\n    \n2. Tester la récupération de tickets en utilisant différents filtres et critères de recherche."
+				}
+			],
+			"description": "- Création de tickets\n    \n- Lecture de tickets\n    \n- Mise à jour de tickets\n    \n- Suppression de tickets\n    \n- Tests de transition de statuts\n    \n- Tests de gestion des pièces jointes"
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "username",
+				"value": "{{JIRA username}}",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "{{vault:Jira API Token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "issueType_id",
+			"value": ""
+		},
+		{
+			"key": "projectKey",
+			"value": ""
+		},
+		{
+			"key": "reporterId",
+			"value": ""
+		},
+		{
+			"key": "issueId",
+			"value": ""
+		},
+		{
+			"key": "read_issueType",
+			"value": ""
+		},
+		{
+			"key": "read_issueStatus",
+			"value": ""
+		},
+		{
+			"key": "read_assignee",
+			"value": ""
+		}
+	]
+}
