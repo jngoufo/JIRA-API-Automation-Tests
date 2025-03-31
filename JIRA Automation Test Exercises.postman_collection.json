@@ -11,7 +11,7 @@
 			"name": "Tests de gestion des tickets (Issues)",
 			"item": [
 				{
-					"name": "Création de tickets",
+					"name": "Cas 1: Création de tickets",
 					"item": [
 						{
 							"name": "Get all issue types for user",
@@ -580,7 +580,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{issueId}}",
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas1_issueId}}",
 									"protocol": "https",
 									"host": [
 										"{{JIRA domain}}",
@@ -592,7 +592,7 @@
 										"api",
 										"3",
 										"issue",
-										"{{issueId}}"
+										"{{cas1_issueId}}"
 									]
 								},
 								"description": "Valider que les données du billet créé (type de billet et projet lié) correspondent à celles envoyées dans la requête API."
@@ -603,122 +603,346 @@
 					"description": "1. Vérifier que vous pouvez créer des tickets de types variés.\n    \n2. Valider que les données du ticket créé correspondent à celles envoyées dans la requête API."
 				},
 				{
-					"name": "Lecture de tickets",
+					"name": "Cas 2: Lecture de ticket",
 					"item": [
 						{
-							"name": "Get project statuses",
-							"event": [
+							"name": "Get Issue Details",
+							"item": [
 								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/project/LEARNJIRA/statuses",
-									"protocol": "https",
-									"host": [
-										"{{JIRA domain}}",
-										"atlassian",
-										"net"
+									"name": "Issue Type",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const jsonData = pm.response.json();\r",
+													"console.log(jsonData);\r",
+													"\r",
+													"// Identify and test issue type, then store it in a collection variable\r",
+													"test_issueType = (testName, issueTypeName) => {\r",
+													"    pm.test(testName, function(){\r",
+													"        pm.expect(jsonData.fields.issuetype.name).to.eql(issueTypeName);\r",
+													"    });\r",
+													"}\r",
+													"check_issueType = (issueType) => {\r",
+													"    switch (issueType){\r",
+													"        case \"Task\":\r",
+													"        test_issueType(\"Verify issue = Task\", \"Task\");\r",
+													"        break;\r",
+													"        case \"Bug\":\r",
+													"        test_issueType(\"Verify issue = Bug\", \"Bug\");\r",
+													"        break;\r",
+													"        case \"Story\":\r",
+													"        test_issueType(\"Verify issue = Story\", \"Story\");\r",
+													"        break;\r",
+													"        case \"New Feature\":\r",
+													"        test_issueType(\"Verify issue = New Feature\", \"New Feature\");\r",
+													"        break;\r",
+													"        case \"Support\":\r",
+													"        test_issueType(\"Verify issue = Support\", \"Support\");\r",
+													"        break;\r",
+													"        case \"Epic\":\r",
+													"        test_issueType(\"Verify issue = Epic\", \"Epic\");\r",
+													"        break;\r",
+													"        case \"Developer escalation\":\r",
+													"        test_issueType(\"Verify issue = Developer escalation\", \"Developer escalation\");\r",
+													"        break;\r",
+													"        default:\r",
+													"        test_issueType(\"Issue = unknown\", \"Unknown\");\r",
+													"    }\r",
+													"};\r",
+													"check_issueType(jsonData.fields.issuetype.name);\r",
+													"//pm.collectionVariables.set(\"cas2_currentIssueTypeName\", jsonData.fields.issuetype.name);\r",
+													"pm.collectionVariables.set(\"cas2_currentIssueTypeId\", jsonData.fields.issuetype.id);\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
 									],
-									"path": [
-										"rest",
-										"api",
-										"3",
-										"project",
-										"LEARNJIRA",
-										"statuses"
-									]
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}",
+											"protocol": "https",
+											"host": [
+												"{{JIRA domain}}",
+												"atlassian",
+												"net"
+											],
+											"path": [
+												"rest",
+												"api",
+												"3",
+												"issue",
+												"{{cas2_issue}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Issue status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Fixed the ReferenceError by defining the issueName_test variable\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const jsonData = pm.response.json();\r",
+													"console.log(jsonData);\r",
+													"\r",
+													"// Identify and test issue status, then store it in a variable\r",
+													"test_issueStatus = (testName, statusName) => {\r",
+													"    pm.test(testName, function(){\r",
+													"        pm.expect(jsonData.fields.status.name).to.eql(statusName)\r",
+													"    })\r",
+													"};\r",
+													"check_issueStatus = (status)=>{\r",
+													"    switch(status){\r",
+													"        case \"To Do\":\r",
+													"        test_issueStatus(\"Verify issue status = To Do\", \"To Do\");\r",
+													"        break;\r",
+													"        case \"In Progress\":\r",
+													"        test_issueStatus(\"Verify issue status = In progress\", \"In Progress\");\r",
+													"        break;\r",
+													"        case \"Done\":\r",
+													"        test_issueStatus(\"Verify issue status = Done\", \"Done\");\r",
+													"        break;\r",
+													"        default:\r",
+													"        test_issueStatus(\"Issue status = Unknown\", \"Unknown\")\r",
+													"    }\r",
+													"};\r",
+													"check_issueStatus(jsonData.fields.status.name);\r",
+													"pm.collectionVariables.set(\"cas2_issueStatus\", jsonData.fields.status.name)\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}",
+											"protocol": "https",
+											"host": [
+												"{{JIRA domain}}",
+												"atlassian",
+												"net"
+											],
+											"path": [
+												"rest",
+												"api",
+												"3",
+												"issue",
+												"{{cas2_issue}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Issue assignee",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Fixed the ReferenceError by defining the issueName_test variable\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const jsonData = pm.response.json();\r",
+													"console.log(jsonData);\r",
+													"\r",
+													"// Set issue assignee\r",
+													"pm.test('assignee is present', function(){\r",
+													"    pm.expect(jsonData.fields.assignee).to.be.oneOf([null,\"Justin N\",\"Jira Outlook\"])\r",
+													"})\r",
+													"pm.collectionVariables.set(\"cas2_issueAssignee\", jsonData.fields.assignee)\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issueUnderTest}}",
+											"protocol": "https",
+											"host": [
+												"{{JIRA domain}}",
+												"atlassian",
+												"net"
+											],
+											"path": [
+												"rest",
+												"api",
+												"3",
+												"issue",
+												"{{cas2_issueUnderTest}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Issue comments",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Fixed the ReferenceError by defining the issueName_test variable\r",
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const jsonData = pm.response.json();\r",
+													"console.log(jsonData);\r",
+													"\r",
+													"// Identify and test issue comments, then store it in a variable\r",
+													"pm.test(\"Check if comments array is empty\", function () {\r",
+													"    pm.expect(jsonData.comments).to.have.lengthOf(0);\r",
+													"});\r",
+													"pm.collectionVariables.set(\"cas2_issueComment\", jsonData.comments)\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/comment",
+											"protocol": "https",
+											"host": [
+												"{{JIRA domain}}",
+												"atlassian",
+												"net"
+											],
+											"path": [
+												"rest",
+												"api",
+												"3",
+												"issue",
+												"{{cas2_issue}}",
+												"comment"
+											]
+										}
+									},
+									"response": []
 								}
-							},
-							"response": []
+							]
 						},
 						{
-							"name": "Get issue details",
+							"name": "Update issue type",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Fixed the ReferenceError by defining the issueName_test variable\r",
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
 											"\r",
-											"const jsonData = pm.response.json();\r",
-											"console.log(jsonData);\r",
-											"\r",
-											"// Identify and test issue type, then store it in a collection variable\r",
-											"test_issueType = (testName, issueTypeName) => {\r",
-											"    pm.test(testName, function(){\r",
-											"        pm.expect(jsonData.fields.issuetype.name).to.eql(issueTypeName);\r",
+											"//Le scenario de test a executer...\r",
+											"test_editIssueType = (testName, newIssueTypeId) => {\r",
+											"    pm.test(testName, function () {\r",
+											"        pm.expect(pm.collectionVariables.get(\"cas2_currentIssueTypeId\")).to.not.eql(pm.collectionVariables.get(newIssueTypeId));\r",
 											"    });\r",
 											"}\r",
-											"check_issueType = (issueType) => {\r",
-											"    switch (issueType){\r",
-											"        case \"Task\":\r",
-											"        test_issueType(\"Verify issue = Task\", \"Task\");\r",
+											"// Les variantes du scenario a executer selon le type de l'issue...\r",
+											"check_newIssueTypeMatch = (newTypeId) => {\r",
+											"    switch (newTypeId){\r",
+											"        case \"taskTypeId\":\r",
+											"        test_editIssueType(\"New Issue Type = Task\", \"taskTypeId\");\r",
 											"        break;\r",
-											"        case \"Bug\":\r",
-											"        test_issueType(\"Verify issue = Bug\", \"Bug\");\r",
+											"        case \"epicTypeId\":\r",
+											"        test_editIssueType(\"New Issue Type = Epic\", \"epicTypeId\");\r",
+											"        break;  \r",
+											"        case \"storyTypeId\":\r",
+											"        test_editIssueType(\"New Issue Type = Story\", \"storyTypeId\");\r",
+											"        break;  \r",
+											"        case \"bugTypeId\":\r",
+											"        test_editIssueType(\"New Issue Type = Bug\", \"bugTypeId\");\r",
+											"        break;  \r",
+											"        case \"featTypeId\":\r",
+											"        test_editIssueType(\"New Issue Type = Feature\", \"featTypeId\");\r",
 											"        break;\r",
-											"        case \"Story\":\r",
-											"        test_issueType(\"Verify issue = Story\", \"Story\");\r",
-											"        break;\r",
-											"        case \"New Feature\":\r",
-											"        test_issueType(\"Verify issue = New Feature\", \"New Feature\");\r",
-											"        break;\r",
-											"        case \"Support\":\r",
-											"        test_issueType(\"Verify issue = Support\", \"Support\");\r",
-											"        break;\r",
-											"        case \"Developer escalation\":\r",
-											"        test_issueType(\"Verify issue = Developer escalation\", \"Developer escalation\");\r",
-											"        break;\r",
+											"        case \"escTypeId\":\r",
+											"        test_editIssueType(\"New Issue Type = Dev escalation\", \"escTypeId\");\r",
+											"        break;  \r",
 											"        default:\r",
-											"        test_issueType(\"Issue = unknown\", \"Unknown\");\r",
+											"        test_editIssueType(\"Issue = unknown\", \"Unknown\");\r",
 											"    }\r",
 											"};\r",
-											"check_issueType(jsonData.fields.issuetype.name);\r",
-											"pm.collectionVariables.set(\"read_issueType\", jsonData.fields.issuetype.name);\r",
+											"/*Execution du scenario*/\r",
+											"check_newIssueTypeMatch(pm.collectionVariables.get(\"cas2_newIssueTypeId\"));\r",
+											"// Mise a jour de la variable cas2_currentIssueTypeId pour qu'elle corresponde au nouvel issueType. Cela permettra de tester les autres requetes qui suivront.\r",
+											"pm.collectionVariables.set(\"cas2_currentIssueTypeId\", pm.collectionVariables.get(\"cas2_newIssueTypeId\"));\r",
+											" \r",
 											"\r",
-											"// Set issue assignee\r",
-											"pm.test('assignee is present', function(){\r",
-											"    pm.expect(jsonData.fields.assignee).to.be.oneOf([null,\"Justin N\",\"Jira Outlook\"])\r",
-											"})\r",
-											"pm.collectionVariables.set(\"read_assignee\", jsonData.fields.assignee)\r",
 											"\r",
-											"// Identify and test issue status, then store it in a variable\r",
-											"test_issueStatus = (testName, statusName) => {\r",
-											"    pm.test(testName, function(){\r",
-											"        pm.expect(jsonData.fields.status.name).to.eql(statusName)\r",
-											"    })\r",
-											"};\r",
-											"check_issueStatus = (status)=>{\r",
-											"    switch(status){\r",
-											"        case \"To Do\":\r",
-											"        test_issueStatus(\"Verify issue status = To Do\", \"To Do\");\r",
-											"        break;\r",
-											"        case \"In Progress\":\r",
-											"        test_issueStatus(\"Verify issue status = In progress\", \"In Progress\");\r",
-											"        break;\r",
-											"        case \"Done\":\r",
-											"        test_issueStatus(\"Verify issue status = Done\", \"Done\");\r",
-											"        break;\r",
-											"        default:\r",
-											"        test_issueStatus(\"Issue status = Unknown\", \"Unknown\")\r",
-											"    }\r",
-											"};\r",
-											"check_issueStatus(jsonData.fields.status.name);\r",
-											"pm.collectionVariables.set(\"read_issueStatus\", jsonData.fields.status.name)\r",
+											"pm.test(\"Response body is empty\", function () {\r",
+											"    pm.expect(pm.response.text()).to.be.empty;\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response status code is 204\", function () {\r",
+											"    pm.expect(pm.response.code).to.equal(204);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 500ms\", function () {\r",
+											"  pm.expect(pm.response.responseTime).to.be.below(500);\r",
+											"});\r",
+											"\r",
+											"\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Récupérer le corps de la requête\r",
+											"const requestBody = pm.request.body;\r",
+											"\r",
+											"console.log(requestBody.raw);\r",
+											"const requestBodyString = requestBody.raw\r",
+											"console.log(typeof(requestBodyString));\r",
+											"console.log(requestBodyString[64]) // = \"t\" dans \"{{taskTypeId}}\" \r",
+											"console.log(requestBodyString[73])// = \"d\" dans \"{{taskTypeId}}\"\r",
+											"console.log(requestBodyString.substring(64,74))\r",
+											"pm.collectionVariables.set(\"cas2_newIssueTypeId\", requestBodyString.substring(64,74));\r",
+											"\r",
+											"\r",
+											"// Stocker la valeur du champ \"id\" de la requete dans une variable de collection\r",
+											"//pm.collectionVariables.set(\"cas2_newIssueTypeId\", requestBody.fields.issuetype.id)\r",
+											"\r",
 											""
 										],
 										"type": "text/javascript",
@@ -727,10 +951,19 @@
 								}
 							],
 							"request": {
-								"method": "GET",
+								"method": "PUT",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fields\": {\r\n        \"issuetype\": {\r\n            \"id\": {{bugTypeId}}\r\n        }\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": {
-									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/LEARNJIRA-2",
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}",
 									"protocol": "https",
 									"host": [
 										"{{JIRA domain}}",
@@ -742,33 +975,137 @@
 										"api",
 										"3",
 										"issue",
-										"LEARNJIRA-2"
+										"{{cas2_issue}}"
+									]
+								},
+								"description": "# Update Issue\n\nThis endpoint is used to update a specific issue in the JIRA system.\n\n## Request\n\n- Method: PUT\n    \n- URL: `https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{ticket_cas2}}`\n    \n- Headers:\n    \n    - Content-Type: application/json\n        \n- Body:\n    \n    - `fields` (object): The fields to be updated for the issue.\n        \n        - `issuetype` (object): The type of the issue to be updated.\n            \n            - `id` (string): The ID of the new issue type.\n                \n\n## Response\n\nThe response of this request is a JSON schema."
+							},
+							"response": []
+						},
+						{
+							"name": "Update issue status",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/transitions",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{cas2_issue}}",
+										"transitions"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "Set issue type",
+							"name": "Update issue status Copy",
 							"request": {
-								"method": "GET",
-								"header": []
-							},
-							"response": []
-						},
-						{
-							"name": "Set issue status",
-							"request": {
-								"method": "GET",
-								"header": []
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\r\n    \"transition\": {\r\n        \"id\": \"21\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/transitions",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{cas2_issue}}",
+										"transitions"
+									]
+								}
 							},
 							"response": []
 						},
 						{
 							"name": "Set issue assignee",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n   \"fields\": {\r\n       \"assignee\":{\"name\":\"harry\"}\r\n   }\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/assignee",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{cas2_issue}}",
+										"assignee"
+									]
+								}
 							},
 							"response": []
 						},
@@ -782,22 +1119,6 @@
 						},
 						{
 							"name": "Set issue impact",
-							"request": {
-								"method": "GET",
-								"header": []
-							},
-							"response": []
-						},
-						{
-							"name": "Comment the issue",
-							"request": {
-								"method": "GET",
-								"header": []
-							},
-							"response": []
-						},
-						{
-							"name": "Get issue assignee",
 							"request": {
 								"method": "GET",
 								"header": []
@@ -850,6 +1171,66 @@
 	],
 	"variable": [
 		{
+			"key": "bugType",
+			"value": "Name of issue type",
+			"type": "string"
+		},
+		{
+			"key": "bugTypeId",
+			"value": "ID of bug type",
+			"type": "string"
+		},
+		{
+			"key": "taskType",
+			"value": "Name of issue type",
+			"type": "string"
+		},
+		{
+			"key": "taskTypeId",
+			"value": "ID of task type",
+			"type": "string"
+		},
+		{
+			"key": "epicType",
+			"value": "Name of issue type",
+			"type": "string"
+		},
+		{
+			"key": "epicTypeId",
+			"value": "ID of Epic type",
+			"type": "string"
+		},
+		{
+			"key": "storyType",
+			"value": "Name of issue type",
+			"type": "string"
+		},
+		{
+			"key": "storyTypeId",
+			"value": "ID of Story type",
+			"type": "string"
+		},
+		{
+			"key": "featType",
+			"value": "Name of issue type",
+			"type": "string"
+		},
+		{
+			"key": "featTypeId",
+			"value": "ID of New Feature type",
+			"type": "string"
+		},
+		{
+			"key": "escType",
+			"value": "Name of issue type",
+			"type": "string"
+		},
+		{
+			"key": "escTypeId",
+			"value": "ID of Dev escalation type",
+			"type": "string"
+		},
+		{
 			"key": "issueType_id",
 			"value": ""
 		},
@@ -859,23 +1240,36 @@
 		},
 		{
 			"key": "reporterId",
-			"value": ""
+			"value": "Reporter under test in Case 1"
 		},
 		{
-			"key": "issueId",
-			"value": ""
+			"key": "cas1_issueId",
+			"value": "Issue under test in Case 1"
 		},
 		{
-			"key": "read_issueType",
-			"value": ""
+			"key": "cas2_issue",
+			"value": "Issue under test in Case 2",
+			"type": "string"
 		},
 		{
-			"key": "read_issueStatus",
-			"value": ""
+			"key": "cas2_currentIssueTypeId",
+			"value": "Id of issue type under test in Case 2 (after updated by the script in \"Update issue type\")"
 		},
 		{
-			"key": "read_assignee",
-			"value": ""
+			"key": "cas2_newIssueTypeId",
+			"value": "Id of the issue type entered by the user in the body of \" \"Update issue type\"\""
+		},
+		{
+			"key": "cas2_issueStatus",
+			"value": "Current status of issue under test in Case 2"
+		},
+		{
+			"key": "cas2_issueAssignee",
+			"value": "Current assignee of issue under test in Case 2"
+		},
+		{
+			"key": "cas2_issueComment",
+			"value": "Current comment of issue under test in Case 2"
 		}
 	]
 }
