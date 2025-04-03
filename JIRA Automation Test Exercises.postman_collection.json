@@ -689,6 +689,58 @@
 									"response": []
 								},
 								{
+									"name": "Issue Transitions",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Your test name\", function () {\r",
+													"    var jsonData = pm.response.json();\r",
+													"    pm.expect(jsonData.value).to.eql(100);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/transitions",
+											"protocol": "https",
+											"host": [
+												"{{JIRA domain}}",
+												"atlassian",
+												"net"
+											],
+											"path": [
+												"rest",
+												"api",
+												"3",
+												"issue",
+												"{{cas2_issue}}",
+												"transitions"
+											]
+										}
+									},
+									"response": []
+								},
+								{
 									"name": "Issue status",
 									"event": [
 										{
@@ -725,7 +777,7 @@
 													"    }\r",
 													"};\r",
 													"check_issueStatus(jsonData.fields.status.name);\r",
-													"pm.collectionVariables.set(\"cas2_issueStatus\", jsonData.fields.status.name)\r",
+													"pm.collectionVariables.set(\"cas2_currentStatus\", jsonData.fields.status.name)\r",
 													""
 												],
 												"type": "text/javascript",
@@ -859,7 +911,7 @@
 							]
 						},
 						{
-							"name": "Update issue type",
+							"name": "Issue type",
 							"event": [
 								{
 									"listen": "test",
@@ -928,16 +980,28 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"// Récupérer le corps de la requête\r",
-											"const requestBody = pm.request.body;\r",
+											"// Récupérer le corps de requête\r",
+											"let requestBody = pm.request.body;\r",
+											"console.log(requestBody);\r",
+											"// Convertir le corps de requete en chaine de caracteres\r",
+											"let requestBodyString = JSON.stringify(requestBody)\r",
+											"console.log(typeof(requestBodyString));\r",
+											"console.log(requestBodyString)\r",
+											"//Convertir la chaine de caracteres en tableau\r",
+											"let requestBodyArray = requestBodyString.split(\" \")\r",
+											"console.log(requestBodyArray);\r",
+											"console.log(requestBodyArray[27])\r",
+											"var type = requestBodyArray[27].slice(2,-6)\r",
+											"console.log(type);\r",
+											"pm.collectionVariables.set('cas2_newIssueTypeId',type)\r",
 											"\r",
-											"console.log(requestBody.raw);\r",
+											"/*console.log(requestBody.raw);\r",
 											"const requestBodyString = requestBody.raw\r",
 											"console.log(typeof(requestBodyString));\r",
 											"console.log(requestBodyString[64]) // = \"t\" dans \"{{taskTypeId}}\" \r",
 											"console.log(requestBodyString[73])// = \"d\" dans \"{{taskTypeId}}\"\r",
 											"console.log(requestBodyString.substring(64,74))\r",
-											"pm.collectionVariables.set(\"cas2_newIssueTypeId\", requestBodyString.substring(64,74));\r",
+											"pm.collectionVariables.set(\"cas2_newIssueTypeId\", requestBodyString.substring(64,74));*/\r",
 											"\r",
 											"\r",
 											"// Stocker la valeur du champ \"id\" de la requete dans une variable de collection\r",
@@ -955,7 +1019,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"fields\": {\r\n        \"issuetype\": {\r\n            \"id\": {{bugTypeId}}\r\n        }\r\n    }\r\n}",
+									"raw": "{\r\n    \"fields\": {\r\n        \"issuetype\": {\r\n            \"id\": {{storyTypeId}}\r\n        }\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -983,50 +1047,95 @@
 							"response": []
 						},
 						{
-							"name": "Update issue status",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
+							"name": "Issue status",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Récupérer le corps de requête\r",
+											"let requestBody = pm.request.body;\r",
+											"console.log(requestBody);\r",
+											"// Convertir le corps de requete en chaine de caracteres\r",
+											"let requestBodyString = JSON.stringify(requestBody)\r",
+											"console.log(typeof(requestBodyString));\r",
+											"console.log(requestBodyString)\r",
+											"//Convertir la chaine de caracteres en tableau\r",
+											"let requestBodyArray = requestBodyString.split(\" \")\r",
+											"console.log(requestBodyArray);\r",
+											"console.log(requestBodyArray[18])\r",
+											"var status = requestBodyArray[18].slice(2,-6)\r",
+											"console.log(status);\r",
+											"pm.collectionVariables.set('cas2_newStatus',status)\r",
+											"\r",
+											"\r",
+											"\r",
+											"/*let options = {\r",
+											"  url: 'https://collectionapi.metmuseum.org/public/collection/v1/objects',\r",
+											"  headers: {\r",
+											"    user: \"marketing.jobhunter@gmx.com\",\r",
+											"    password: \"ATATT3xFfGF0_85Hrn3S9klFka_HBlMeUcxFWkeksMIN6xSpc5GTT9lJ-Oz8FqmSK6D9G4YZtTtybwa1S3zNl0_7na_lGjZok4UuDW5kotXyE5W4AJ1ANEyxkANC1O6Z9p4PR_JY6oy060VAZ3SJ2S6j_lJQHa25BG1UhD6RX1wFu3mRX2qJJrY=4EC5791D\"\r",
+											"  }\r",
+											"}\r",
+											"\r",
+											"    const response = await pm.sendRequest(options, function (err, res) {\r",
+											"  if (err) {\r",
+											"    console.log(response.json());\r",
+											"    return\r",
+											"  }\r",
+											"})\r",
+											"*/\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
-								"url": {
-									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/transitions",
-									"protocol": "https",
-									"host": [
-										"{{JIRA domain}}",
-										"atlassian",
-										"net"
-									],
-									"path": [
-										"rest",
-										"api",
-										"3",
-										"issue",
-										"{{cas2_issue}}",
-										"transitions"
-									]
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//Le scenario de test a executer...\r",
+											"test_editIssueStatus = (testName, newIssueStatus) => {\r",
+											"    pm.test(testName, function () {\r",
+											"        pm.expect(pm.collectionVariables.get(\"cas2_currentStatus\")).to.not.eql(pm.collectionVariables.get(newIssueStatus));\r",
+											"    });\r",
+											"}\r",
+											"// Les variantes du scenario a executer selon le Status de l'issue...\r",
+											"check_newIssueStatusMatch = (newStatus) => {\r",
+											"    switch (newStatus){\r",
+											"        case \"toDo_id\":\r",
+											"        test_editIssueStatus(\"New Issue Status = To Do\", \"toDo_id\");\r",
+											"        break;\r",
+											"        case \"inProgress_id\":\r",
+											"        test_editIssueStatus(\"New Issue Status = In Progress\", \"inProgress_id\");\r",
+											"        break;  \r",
+											"        case \"done_id\":\r",
+											"        test_editIssueStatus(\"New Issue Status = Done\", \"done_id\");\r",
+											"        break;  \r",
+											"        default:\r",
+											"        test_editIssueStatus(\"Issue status = unknown\", \"Unknown\");\r",
+											"    }\r",
+											"};\r",
+											"/*Execution du scenario*/\r",
+											"check_newIssueStatusMatch(pm.collectionVariables.get(\"cas2_newStatus\"));\r",
+											"// Mise a jour de la variable cas2_currentStatus pour qu'elle corresponde au nouveau Statut. Cela permettra de tester les autres requetes qui suivront.\r",
+											"pm.collectionVariables.set(\"cas2_currentStatus\", pm.collectionVariables.get(\"cas2_newStatus\"));\r",
+											"// Je verifie que le statut actuel correspond bien au nouveau statut defini dans le corps de cette requete\r",
+											"pm.execution.setNextRequest(\"048916d7-6176-4276-95d4-f216c12d9512\");\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update issue status Copy",
+							],
 							"request": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "    {\r\n    \"transition\": {\r\n        \"id\": \"21\"\r\n    }\r\n}",
+									"raw": "    {\r\n    \"transition\": {\r\n        \"id\": {{toDo_id}}\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1231,6 +1340,21 @@
 			"type": "string"
 		},
 		{
+			"key": "toDo_id",
+			"value": "Issue status \"To Do\"",
+			"type": "string"
+		},
+		{
+			"key": "inProgress_id",
+			"value": "Issue status \"In progress\"",
+			"type": "string"
+		},
+		{
+			"key": "done_id",
+			"value": "Issue status \"Done\"",
+			"type": "string"
+		},
+		{
 			"key": "issueType_id",
 			"value": ""
 		},
@@ -1260,7 +1384,7 @@
 			"value": "Id of the issue type entered by the user in the body of \" \"Update issue type\"\""
 		},
 		{
-			"key": "cas2_issueStatus",
+			"key": "cas2_currentStatus",
 			"value": "Current status of issue under test in Case 2"
 		},
 		{
@@ -1270,6 +1394,10 @@
 		{
 			"key": "cas2_issueComment",
 			"value": "Current comment of issue under test in Case 2"
+		},
+		{
+			"key": "cas2_newStatus",
+			"value": ""
 		}
 	]
 }
