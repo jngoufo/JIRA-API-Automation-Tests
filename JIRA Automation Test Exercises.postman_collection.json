@@ -127,11 +127,12 @@
 											"});\r",
 											"\r",
 											"const jsonData = pm.response.json();\r",
-											"console.log(jsonData);\r",
 											"\r",
 											"const issuePriority_names = jsonData.map(n => n.name);\r",
 											"console.log(issuePriority_names)\r",
-											"\r",
+											"pm.collectionVariables.set(\"priorities\", JSON.stringify(issuePriority_names))\r",
+											"let priorities = JSON.parse(pm.collectionVariables.get(\"priorities\"));\r",
+											"console.log(priorities[1]);\r",
 											"\r",
 											"\r",
 											"\r",
@@ -615,12 +616,12 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
+													"// Get json data and issue type names\r",
 													"const jsonData = pm.response.json();\r",
 													"console.log(jsonData);\r",
+													"let issueTypeNames = JSON.parse(pm.collectionVariables.get(\"issueTypeNames\"));\r",
+													"console.log(issueTypeNames[6]);\r",
+													"\r",
 													"\r",
 													"// Identify and test issue type, then store it in a collection variable\r",
 													"test_issueType = (testName, issueTypeName) => {\r",
@@ -628,28 +629,34 @@
 													"        pm.expect(jsonData.fields.issuetype.name).to.eql(issueTypeName);\r",
 													"    });\r",
 													"}\r",
+													"\r",
+													"setTestName = (s) => {\r",
+													"    return \"Verify issue Type = \" + s\r",
+													"};\r",
+													"console.log(setTestName(issueTypeNames[6]));\r",
+													"\r",
 													"check_issueType = (issueType) => {\r",
 													"    switch (issueType){\r",
-													"        case \"Task\":\r",
-													"        test_issueType(\"Verify issue = Task\", \"Task\");\r",
+													"        case issueTypeNames[6]:\r",
+													"        test_issueType(setTestName(issueTypeNames[6]), issueTypeNames[6]);\r",
 													"        break;\r",
-													"        case \"Bug\":\r",
-													"        test_issueType(\"Verify issue = Bug\", \"Bug\");\r",
+													"        case issueTypeNames[0]:\r",
+													"        test_issueType(setTestName(issueTypeNames[0]), issueTypeNames[0]);\r",
 													"        break;\r",
-													"        case \"Story\":\r",
-													"        test_issueType(\"Verify issue = Story\", \"Story\");\r",
+													"        case issueTypeNames[4]:\r",
+													"        test_issueType(setTestName(issueTypeNames[4]), issueTypeNames[4]);\r",
 													"        break;\r",
-													"        case \"New Feature\":\r",
-													"        test_issueType(\"Verify issue = New Feature\", \"New Feature\");\r",
+													"        case issueTypeNames[3]:\r",
+													"        test_issueType(setTestName(issueTypeNames[3]), issueTypeNames[3]);\r",
 													"        break;\r",
-													"        case \"Support\":\r",
-													"        test_issueType(\"Verify issue = Support\", \"Support\");\r",
+													"        case issueTypeNames[5]:\r",
+													"        test_issueType(setTestName(issueTypeNames[5]), issueTypeNames[5]);\r",
 													"        break;\r",
-													"        case \"Epic\":\r",
-													"        test_issueType(\"Verify issue = Epic\", \"Epic\");\r",
+													"        case issueTypeNames[2]:\r",
+													"        test_issueType(setTestName(issueTypeNames[2]), issueTypeNames[2]);\r",
 													"        break;\r",
-													"        case \"Developer escalation\":\r",
-													"        test_issueType(\"Verify issue = Developer escalation\", \"Developer escalation\");\r",
+													"        case issueTypeNames[1]:\r",
+													"        test_issueType(setTestName(issueTypeNames[1]), issueTypeNames[1]);\r",
 													"        break;\r",
 													"        default:\r",
 													"        test_issueType(\"Issue = unknown\", \"Unknown\");\r",
@@ -659,6 +666,16 @@
 													"//pm.collectionVariables.set(\"cas2_currentIssueTypeName\", jsonData.fields.issuetype.name);\r",
 													"pm.collectionVariables.set(\"cas2_currentIssueTypeId\", jsonData.fields.issuetype.id);\r",
 													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
 													""
 												],
 												"type": "text/javascript",
@@ -689,19 +706,31 @@
 									"response": []
 								},
 								{
-									"name": "Issue Transitions",
+									"name": "Issue Transitions (status)",
 									"event": [
 										{
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Your test name\", function () {\r",
-													"    var jsonData = pm.response.json();\r",
-													"    pm.expect(jsonData.value).to.eql(100);\r",
-													"});"
+													"const jsonData = pm.response.json();\r",
+													"console.log(jsonData.transitions);\r",
+													"// Get json data and issue status names\r",
+													"console.log(jsonData.transitions.map(n => n.name))\r",
+													"pm.collectionVariables.set(\"statuses\", JSON.stringify(jsonData.transitions.map(n => n.name)))\r",
+													"let status = JSON.parse(pm.collectionVariables.get(\"statuses\"));\r",
+													"console.log(status[2]);\r",
+													"\r",
+													" "
 												],
 												"type": "text/javascript",
 												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"packages": {},
+												"type": "text/javascript"
 											}
 										}
 									],
@@ -747,13 +776,11 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"// Fixed the ReferenceError by defining the issueName_test variable\r",
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
 													"const jsonData = pm.response.json();\r",
 													"console.log(jsonData);\r",
+													"\r",
+													"let issueStatusName = JSON.parse(pm.collectionVariables.get(\"statuses\"));\r",
+													"console.log(issueStatusName[2]);\r",
 													"\r",
 													"// Identify and test issue status, then store it in a variable\r",
 													"test_issueStatus = (testName, statusName) => {\r",
@@ -761,16 +788,22 @@
 													"        pm.expect(jsonData.fields.status.name).to.eql(statusName)\r",
 													"    })\r",
 													"};\r",
+													"\r",
+													"setTestName = (s) => {\r",
+													"    return \"Verify issue status = \" + s\r",
+													"};\r",
+													"console.log(setTestName(issueStatusName[0]));\r",
+													"\r",
 													"check_issueStatus = (status)=>{\r",
 													"    switch(status){\r",
-													"        case \"To Do\":\r",
-													"        test_issueStatus(\"Verify issue status = To Do\", \"To Do\");\r",
+													"        case issueStatusName[0]:\r",
+													"        test_issueStatus(setTestName(issueStatusName[0]), issueStatusName[0]);\r",
 													"        break;\r",
-													"        case \"In Progress\":\r",
-													"        test_issueStatus(\"Verify issue status = In progress\", \"In Progress\");\r",
+													"        case issueStatusName[1]:\r",
+													"        test_issueStatus(setTestName(issueStatusName[1]), issueStatusName[1]);\r",
 													"        break;\r",
-													"        case \"Done\":\r",
-													"        test_issueStatus(\"Verify issue status = Done\", \"Done\");\r",
+													"        case issueStatusName[2]:\r",
+													"        test_issueStatus(setTestName(issueStatusName[2]), issueStatusName[2]);\r",
 													"        break;\r",
 													"        default:\r",
 													"        test_issueStatus(\"Issue status = Unknown\", \"Unknown\")\r",
@@ -778,6 +811,16 @@
 													"};\r",
 													"check_issueStatus(jsonData.fields.status.name);\r",
 													"pm.collectionVariables.set(\"cas2_currentStatus\", jsonData.fields.status.name)\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
 													""
 												],
 												"type": "text/javascript",
@@ -814,11 +857,6 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"// Fixed the ReferenceError by defining the issueName_test variable\r",
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
 													"const jsonData = pm.response.json();\r",
 													"console.log(jsonData);\r",
 													"\r",
@@ -839,7 +877,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issueUnderTest}}",
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}",
 											"protocol": "https",
 											"host": [
 												"{{JIRA domain}}",
@@ -851,7 +889,7 @@
 												"api",
 												"3",
 												"issue",
-												"{{cas2_issueUnderTest}}"
+												"{{cas2_issue}}"
 											]
 										}
 									},
@@ -864,10 +902,9 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"// Fixed the ReferenceError by defining the issueName_test variable\r",
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
+													"// pm.test(\"Status code is 200\", function () {\r",
+													"//     pm.response.to.have.status(200);\r",
+													"// });\r",
 													"\r",
 													"const jsonData = pm.response.json();\r",
 													"console.log(jsonData);\r",
@@ -908,6 +945,32 @@
 									},
 									"response": []
 								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											""
+										]
+									}
+								}
 							]
 						},
 						{
@@ -918,32 +981,43 @@
 									"script": {
 										"exec": [
 											"\r",
+											"let issueTypeId = JSON.parse(pm.collectionVariables.get(\"issueTypeIds\"));\r",
+											"let issueTypeName = JSON.parse(pm.collectionVariables.get(\"issueTypeNames\"));\r",
+											"console.log(issueTypeId[6]);\r",
+											"console.log(issueTypeName[6]);\r",
+											"\r",
 											"//Le scenario de test a executer...\r",
 											"test_editIssueType = (testName, newIssueTypeId) => {\r",
 											"    pm.test(testName, function () {\r",
 											"        pm.expect(pm.collectionVariables.get(\"cas2_currentIssueTypeId\")).to.not.eql(pm.collectionVariables.get(newIssueTypeId));\r",
 											"    });\r",
 											"}\r",
+											"\r",
+											"setTestName = (t) => {\r",
+											"    return \"New Issue Type = \" + t\r",
+											"};\r",
+											"console.log(setTestName(issueTypeName[6]));\r",
+											"\r",
 											"// Les variantes du scenario a executer selon le type de l'issue...\r",
 											"check_newIssueTypeMatch = (newTypeId) => {\r",
 											"    switch (newTypeId){\r",
-											"        case \"taskTypeId\":\r",
-											"        test_editIssueType(\"New Issue Type = Task\", \"taskTypeId\");\r",
+											"        case issueTypeId[6]:\r",
+											"        test_editIssueType(setTestName(issueTypeName[6]), issueTypeId[6]);\r",
 											"        break;\r",
-											"        case \"epicTypeId\":\r",
-											"        test_editIssueType(\"New Issue Type = Epic\", \"epicTypeId\");\r",
+											"        case issueTypeId[2]:\r",
+											"        test_editIssueType(setTestName(issueTypeName[2]), issueTypeId[2]);\r",
 											"        break;  \r",
-											"        case \"storyTypeId\":\r",
-											"        test_editIssueType(\"New Issue Type = Story\", \"storyTypeId\");\r",
+											"        case issueTypeId[4]:\r",
+											"        test_editIssueType(setTestName(issueTypeName[4]), issueTypeId[4]);\r",
 											"        break;  \r",
-											"        case \"bugTypeId\":\r",
-											"        test_editIssueType(\"New Issue Type = Bug\", \"bugTypeId\");\r",
+											"        case issueTypeId[0]:\r",
+											"        test_editIssueType(setTestName(issueTypeName[0]), issueTypeId[0]);\r",
 											"        break;  \r",
-											"        case \"featTypeId\":\r",
-											"        test_editIssueType(\"New Issue Type = Feature\", \"featTypeId\");\r",
+											"        case issueTypeId[3]:\r",
+											"        test_editIssueType(setTestName(issueTypeName[3]), issueTypeId[3]);\r",
 											"        break;\r",
-											"        case \"escTypeId\":\r",
-											"        test_editIssueType(\"New Issue Type = Dev escalation\", \"escTypeId\");\r",
+											"        case issueTypeId[1]:\r",
+											"        test_editIssueType(setTestName(issueTypeName[1]), issueTypeId[1]);\r",
 											"        break;  \r",
 											"        default:\r",
 											"        test_editIssueType(\"Issue = unknown\", \"Unknown\");\r",
@@ -954,8 +1028,6 @@
 											"// Mise a jour de la variable cas2_currentIssueTypeId pour qu'elle corresponde au nouvel issueType. Cela permettra de tester les autres requetes qui suivront.\r",
 											"pm.collectionVariables.set(\"cas2_currentIssueTypeId\", pm.collectionVariables.get(\"cas2_newIssueTypeId\"));\r",
 											" \r",
-											"\r",
-											"\r",
 											"pm.test(\"Response body is empty\", function () {\r",
 											"    pm.expect(pm.response.text()).to.be.empty;\r",
 											"});\r",
@@ -993,19 +1065,39 @@
 											"console.log(requestBodyArray[27])\r",
 											"var type = requestBodyArray[27].slice(2,-6)\r",
 											"console.log(type);\r",
-											"pm.collectionVariables.set('cas2_newIssueTypeId',type)\r",
 											"\r",
-											"/*console.log(requestBody.raw);\r",
-											"const requestBodyString = requestBody.raw\r",
-											"console.log(typeof(requestBodyString));\r",
-											"console.log(requestBodyString[64]) // = \"t\" dans \"{{taskTypeId}}\" \r",
-											"console.log(requestBodyString[73])// = \"d\" dans \"{{taskTypeId}}\"\r",
-											"console.log(requestBodyString.substring(64,74))\r",
-											"pm.collectionVariables.set(\"cas2_newIssueTypeId\", requestBodyString.substring(64,74));*/\r",
+											"let issueTypeId = JSON.parse(pm.collectionVariables.get(\"issueTypeIds\"));\r",
+											"console.log(issueTypeId[6]);\r",
+											"set_varValue = (id) => {\r",
+											"    pm.collectionVariables.set('cas2_newIssueTypeId',id)\r",
+											"}\r",
+											"// Change le type saisi dans le corps de requete par son equivalent ID\r",
+											"change_varTypedByVarId = (valTyped) => {\r",
+											"    switch (valTyped){\r",
+											"        case \"taskTypeId\":\r",
+											"        set_varValue(issueTypeId[6]);\r",
+											"        break;\r",
+											"        case \"epicTypeId\":\r",
+											"        set_varValue(issueTypeId[2]);\r",
+											"        break;  \r",
+											"        case \"storyTypeId\":\r",
+											"        set_varValue(issueTypeId[4]);\r",
+											"        break;  \r",
+											"        case \"bugTypeId\":\r",
+											"        set_varValue(issueTypeId[0]);\r",
+											"        break;  \r",
+											"        case \"featTypeId\":\r",
+											"        set_varValue(issueTypeId[3]);\r",
+											"        break;\r",
+											"        case \"escTypeId\":\r",
+											"        set_varValue(issueTypeId[1]);\r",
+											"        break;  \r",
+											"        default:\r",
+											"        set_varValue(\"null\");\r",
+											"    }\r",
+											"};\r",
 											"\r",
-											"\r",
-											"// Stocker la valeur du champ \"id\" de la requete dans une variable de collection\r",
-											"//pm.collectionVariables.set(\"cas2_newIssueTypeId\", requestBody.fields.issuetype.id)\r",
+											"change_varTypedByVarId(type)\r",
 											"\r",
 											""
 										],
@@ -1019,7 +1111,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"fields\": {\r\n        \"issuetype\": {\r\n            \"id\": {{storyTypeId}}\r\n        }\r\n    }\r\n}",
+									"raw": "{\r\n    \"fields\": {\r\n        \"issuetype\": {\r\n            \"id\": {{taskTypeId}}\r\n        }\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1066,8 +1158,27 @@
 											"console.log(requestBodyArray[18])\r",
 											"var status = requestBodyArray[18].slice(2,-6)\r",
 											"console.log(status);\r",
-											"pm.collectionVariables.set('cas2_newStatus',status)\r",
+											"set_varValue = (id) => {\r",
+											"    pm.collectionVariables.set('cas2_newStatus',id)\r",
+											"}\r",
+											"// Change le type saisi dans le corps de requete par son equivalent ID\r",
+											"change_varTypedByVarId = (valTyped) => {\r",
+											"    switch (valTyped){\r",
+											"        case \"toDo_id\":\r",
+											"        set_varValue(pm.collectionVariables.get('toDo_id'));\r",
+											"        break;\r",
+											"        case \"inProgress_id\":\r",
+											"        set_varValue(pm.collectionVariables.get('inProgress_id'));\r",
+											"        break;  \r",
+											"        case \"done_id\":\r",
+											"        set_varValue(pm.collectionVariables.get('done_id'));\r",
+											"        break;  \r",
+											"        default:\r",
+											"        set_varValue(\"null\");\r",
+											"    }\r",
+											"};\r",
 											"\r",
+											"change_varTypedByVarId(status)\r",
 											"\r",
 											"\r",
 											"/*let options = {\r",
@@ -1095,23 +1206,31 @@
 									"listen": "test",
 									"script": {
 										"exec": [
+											"let issueStatusName = JSON.parse(pm.collectionVariables.get(\"statuses\"));\r",
+											"console.log(issueStatusName[2]);\r",
 											"//Le scenario de test a executer...\r",
 											"test_editIssueStatus = (testName, newIssueStatus) => {\r",
 											"    pm.test(testName, function () {\r",
 											"        pm.expect(pm.collectionVariables.get(\"cas2_currentStatus\")).to.not.eql(pm.collectionVariables.get(newIssueStatus));\r",
 											"    });\r",
 											"}\r",
+											"\r",
+											"setTestName = (s) => {\r",
+											"    return \"New Issue Status = \" + s\r",
+											"};\r",
+											"console.log(setTestName(issueStatusName[0]));\r",
+											"\r",
 											"// Les variantes du scenario a executer selon le Status de l'issue...\r",
 											"check_newIssueStatusMatch = (newStatus) => {\r",
 											"    switch (newStatus){\r",
-											"        case \"toDo_id\":\r",
-											"        test_editIssueStatus(\"New Issue Status = To Do\", \"toDo_id\");\r",
+											"        case pm.collectionVariables.get('toDo_id'):\r",
+											"        test_editIssueStatus(setTestName(issueStatusName[0]), pm.collectionVariables.get('toDo_id'));\r",
 											"        break;\r",
-											"        case \"inProgress_id\":\r",
-											"        test_editIssueStatus(\"New Issue Status = In Progress\", \"inProgress_id\");\r",
+											"        case pm.collectionVariables.get('inProgress_id'):\r",
+											"        test_editIssueStatus(setTestName(issueStatusName[1]), pm.collectionVariables.get('inProgress_id'));\r",
 											"        break;  \r",
-											"        case \"done_id\":\r",
-											"        test_editIssueStatus(\"New Issue Status = Done\", \"done_id\");\r",
+											"        case pm.collectionVariables.get('done_id'):\r",
+											"        test_editIssueStatus(setTestName(issueStatusName[2]), pm.collectionVariables.get('done_id'));\r",
 											"        break;  \r",
 											"        default:\r",
 											"        test_editIssueStatus(\"Issue status = unknown\", \"Unknown\");\r",
@@ -1121,8 +1240,7 @@
 											"check_newIssueStatusMatch(pm.collectionVariables.get(\"cas2_newStatus\"));\r",
 											"// Mise a jour de la variable cas2_currentStatus pour qu'elle corresponde au nouveau Statut. Cela permettra de tester les autres requetes qui suivront.\r",
 											"pm.collectionVariables.set(\"cas2_currentStatus\", pm.collectionVariables.get(\"cas2_newStatus\"));\r",
-											"// Je verifie que le statut actuel correspond bien au nouveau statut defini dans le corps de cette requete\r",
-											"pm.execution.setNextRequest(\"048916d7-6176-4276-95d4-f216c12d9512\");\r",
+											"\r",
 											""
 										],
 										"type": "text/javascript",
@@ -1135,7 +1253,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "    {\r\n    \"transition\": {\r\n        \"id\": {{toDo_id}}\r\n    }\r\n}",
+									"raw": "    {\r\n    \"transition\": {\r\n        \"id\": {{inProgress_id}}\r\n    }\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1235,7 +1353,34 @@
 							"response": []
 						}
 					],
-					"description": "1. Récupérer les détails d'un ticket spécifique et vérifier que les données renvoyées sont correctes.\n    \n2. Tester la récupération de tickets en utilisant différents filtres et critères de recherche."
+					"description": "1. Récupérer les détails d'un ticket spécifique et vérifier que les données renvoyées sont correctes.\n    \n2. Tester la récupération de tickets en utilisant différents filtres et critères de recherche.",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"test_issueProperty = (testName, propVal, issuePropName) => {\r",
+									"    pm.test(testName, function(){\r",
+									"        propVal.to.eql(issuePropName);\r",
+									"    });\r",
+									"}\r",
+									""
+								]
+							}
+						}
+					]
 				}
 			],
 			"description": "- Création de tickets\n    \n- Lecture de tickets\n    \n- Mise à jour de tickets\n    \n- Suppression de tickets\n    \n- Tests de transition de statuts\n    \n- Tests de gestion des pièces jointes"
@@ -1340,6 +1485,23 @@
 			"type": "string"
 		},
 		{
+			"key": "issueTypeNames",
+			"value": "List of JIRA issue types names (by alphabetical order)"
+		},
+		{
+			"key": "issueTypeIds",
+			"value": "List of JIRA issue types ids (by the alphabetical order of their matching names)",
+			"type": "string"
+		},
+		{
+			"key": "priorities",
+			"value": "List of JIRA issue priorities"
+		},
+		{
+			"key": "statuses",
+			"value": "List of JIRA issue statuses"
+		},
+		{
 			"key": "toDo_id",
 			"value": "Issue status \"To Do\"",
 			"type": "string"
@@ -1388,16 +1550,16 @@
 			"value": "Current status of issue under test in Case 2"
 		},
 		{
+			"key": "cas2_newStatus",
+			"value": "New status of issue under test in Case 2"
+		},
+		{
 			"key": "cas2_issueAssignee",
 			"value": "Current assignee of issue under test in Case 2"
 		},
 		{
 			"key": "cas2_issueComment",
 			"value": "Current comment of issue under test in Case 2"
-		},
-		{
-			"key": "cas2_newStatus",
-			"value": ""
 		}
 	]
 }
