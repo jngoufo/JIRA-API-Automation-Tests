@@ -297,14 +297,21 @@
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
+											"// Get endpoint response in jsonData, and extract user account names and ids\r",
 											"const jsonData = pm.response.json();\r",
 											"console.log(jsonData);\r",
-											"\r",
-											"const users = jsonData.map(u => u.displayName);\r",
-											"console.log(users)\r",
-											"\r",
-											"// In jsonData, get the id of the first occurence of the priority with key specified in my json file\r",
+											"let accountName = jsonData.map(a => '\"' + a.displayName + '\"' );\r",
+											"let accountId = jsonData.map(i => '\"' + i.accountId + '\"' );\r",
+											"console.log(accountName)\r",
+											"console.log(accountId)\r",
+											"// Build these names and ids so they look as array, then put them in variables\r",
+											"accountName = '['+ accountName + ']';\r",
+											"accountId = '['+ accountId + ']';\r",
+											"pm.collectionVariables.set('userAccountName', accountName)\r",
+											"pm.collectionVariables.set('userAccountId', accountId)\r",
+											"//In jsonData, get the id of the first occurence of the priority with key specified in my json file\r",
 											"pm.collectionVariables.set('reporterId', jsonData[users.indexOf(pm.iterationData.get(\"reporter\"))].accountId);\r",
+											"\r",
 											"\r",
 											"\r",
 											"\r",
@@ -864,7 +871,7 @@
 													"pm.test('assignee is present', function(){\r",
 													"    pm.expect(jsonData.fields.assignee).to.be.oneOf([null,\"Justin N\",\"Jira Outlook\"])\r",
 													"})\r",
-													"pm.collectionVariables.set(\"cas2_issueAssignee\", jsonData.fields.assignee)\r",
+													"pm.collectionVariables.set(\"cas2_currentAssignee\", jsonData.fields.assignee.accountId)\r",
 													"\r",
 													""
 												],
@@ -1281,12 +1288,24 @@
 							"response": []
 						},
 						{
-							"name": "Set issue assignee",
+							"name": "Issue assignee",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
+											"let userAccountId = JSON.parse(pm.collectionVariables.get(\"userAccountId\"));\r",
+											"let userAccountName = JSON.parse(pm.collectionVariables.get(\"userAccountName\"));\r",
+											"\r",
+											"console.log(userAccountId[2] + \" = \" + userAccountName[2]);\r",
+											"\r",
+											"//Le scenario de test a executer...\r",
+											"    pm.test(\"Set new issue assignee\", function () {\r",
+											"        pm.expect(pm.collectionVariables.get(\"cas2_currentAssignee\")).to.not.eql(pm.collectionVariables.get(\"cas2_newAssignee\"));\r",
+											"    });\r",
+											"//Mise a jour de la variable cas2_currentStatus pour qu'elle corresponde au nouveau Statut. Cela permettra de tester les autres requetes qui suivront.\r",
+											"pm.collectionVariables.set(\"cas2_currentAssignee\", pm.collectionVariables.get(\"cas2_newAssignee\"));\r",
+											"\r",
 											""
 										],
 										"type": "text/javascript",
@@ -1297,6 +1316,20 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
+											"// Récupérer le corps de requête\r",
+											"let requestBody = pm.request.body;\r",
+											"console.log(requestBody);\r",
+											"// Convertir le corps de requete en chaine de caracteres\r",
+											"let requestBodyString = JSON.stringify(requestBody)\r",
+											"console.log(typeof(requestBodyString));\r",
+											"console.log(requestBodyString)\r",
+											"//Convertir la chaine de caracteres en tableau et obtenir la valeur entree par l'utilisateur\r",
+											"let requestBodyArray = requestBodyString.split(\" \")\r",
+											"console.log(requestBodyArray);\r",
+											"console.log(requestBodyArray[8])\r",
+											"let assignee = requestBodyArray[8].slice(2,-6)\r",
+											"console.log(assignee);\r",
+											"pm.collectionVariables.set('cas2_newAssignee', assignee)\r",
 											""
 										],
 										"type": "text/javascript",
@@ -1309,7 +1342,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n   \"fields\": {\r\n       \"assignee\":{\"name\":\"harry\"}\r\n   }\r\n}\r\n",
+									"raw": "{\r\n    \"accountId\": \"630db2cd9796033b256bc349\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1337,7 +1370,7 @@
 							"response": []
 						},
 						{
-							"name": "Set issue due date",
+							"name": "Set issue due date (to be done)",
 							"request": {
 								"method": "GET",
 								"header": []
@@ -1345,7 +1378,7 @@
 							"response": []
 						},
 						{
-							"name": "Set issue impact",
+							"name": "Set issue impact (to be done)",
 							"request": {
 								"method": "GET",
 								"header": []
@@ -1554,12 +1587,24 @@
 			"value": "New status of issue under test in Case 2"
 		},
 		{
-			"key": "cas2_issueAssignee",
+			"key": "cas2_currentAssignee",
 			"value": "Current assignee of issue under test in Case 2"
+		},
+		{
+			"key": "cas2_newAssignee",
+			"value": "New assignee of issue under test in Case 2"
 		},
 		{
 			"key": "cas2_issueComment",
 			"value": "Current comment of issue under test in Case 2"
+		},
+		{
+			"key": "userAccountName",
+			"value": "List of account users"
+		},
+		{
+			"key": "userAccountId",
+			"value": "List of account ids"
 		}
 	]
 }
