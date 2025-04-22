@@ -903,6 +903,65 @@
 									"response": []
 								},
 								{
+									"name": "Issue Due date",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"// Get json data and issue type names\r",
+													"const jsonData = pm.response.json();\r",
+													"console.log(jsonData.fields.duedate);\r",
+													"\r",
+													"// Get this issue due date\r",
+													"pm.collectionVariables.set('cas2_currentDuedate', jsonData.fields.duedate);\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}",
+											"protocol": "https",
+											"host": [
+												"{{JIRA domain}}",
+												"atlassian",
+												"net"
+											],
+											"path": [
+												"rest",
+												"api",
+												"3",
+												"issue",
+												"{{cas2_issue}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
 									"name": "Issue comments",
 									"event": [
 										{
@@ -1370,18 +1429,118 @@
 							"response": []
 						},
 						{
-							"name": "Set issue due date (to be done)",
+							"name": "Issue due date",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Récupérer le corps de requête\r",
+											"let requestBody = pm.request.body;\r",
+											"console.log(requestBody);\r",
+											"// Convertir le corps de requete en chaine de caracteres\r",
+											"let requestBodyString = JSON.stringify(requestBody)\r",
+											"console.log(typeof(requestBodyString));\r",
+											"console.log(requestBodyString)\r",
+											"//Convertir la chaine de caracteres en tableau et obtenir la valeur entree par l'utilisateur\r",
+											"let requestBodyArray = requestBodyString.split(\" \")\r",
+											"console.log(requestBodyArray);\r",
+											"console.log(requestBodyArray[13])\r",
+											"let duedate = requestBodyArray[13].slice(14,-6)\r",
+											"console.log(duedate);\r",
+											"pm.collectionVariables.set('cas2_newDuedate', duedate)\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											"\r",
+											"let duedate = pm.collectionVariables.get(\"cas2_newDuedate\");\r",
+											"console.log(typeof(duedate));\r",
+											"\r",
+											"//Le scenario de test a executer...\r",
+											"    pm.test(\"Set new duedate\", function () {\r",
+											"        pm.expect(pm.collectionVariables.get(\"cas2_currentDuedate\")).to.not.eql(pm.collectionVariables.get(\"cas2_newDuedate\"));\r",
+											"    });\r",
+											"//Mise a jour de la variable cas2_currentStatus pour qu'elle corresponde au nouveau Statut. Cela permettra de tester les autres requetes qui suivront.\r",
+											"pm.collectionVariables.set(\"cas2_currentDuedate\", pm.collectionVariables.get(\"cas2_newDuedate\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fields\": {\r\n        \"duedate\":\"2025-05-25\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{cas2_issue}}"
+									]
+								}
 							},
 							"response": []
 						},
 						{
-							"name": "Set issue impact (to be done)",
+							"name": "Issue comments",
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n        \"body\": {\r\n            \"type\": \"doc\",\r\n            \"version\": 1,\r\n            \"content\": [\r\n                {\r\n                    \"type\": \"paragraph\",\r\n                    \"content\": [\r\n                        {\r\n                            \"type\": \"text\",\r\n                            \"text\": \"{{$randomLoremParagraph}}\"\r\n                        }\r\n                    ]\r\n                }\r\n            ]\r\n        }\r\n    }\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/comment/10000",
+									"protocol": "https",
+									"host": [
+										"{{JIRA domain}}",
+										"atlassian",
+										"net"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										"{{cas2_issue}}",
+										"comment",
+										"10000"
+									]
+								}
 							},
 							"response": []
 						}
@@ -1605,6 +1764,18 @@
 		{
 			"key": "userAccountId",
 			"value": "List of account ids"
+		},
+		{
+			"key": "cas2_newDuedate",
+			"value": ""
+		},
+		{
+			"key": "cas2_currentDuedate",
+			"value": ""
+		},
+		{
+			"key": "cas2_newComment",
+			"value": ""
 		}
 	]
 }
