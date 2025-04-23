@@ -979,7 +979,9 @@
 													"pm.test(\"Check if comments array is empty\", function () {\r",
 													"    pm.expect(jsonData.comments).to.have.lengthOf(0);\r",
 													"});\r",
-													"pm.collectionVariables.set(\"cas2_issueComment\", jsonData.comments)\r",
+													"pm.collectionVariables.set(\"cas2_currentComment\", jsonData.comments[0].body.content[0].content[0].text)\r",
+													"pm.collectionVariables.set('cas2_currentReply', jsonData.comments[1].body.content[0].content[1].text)\r",
+													"\r",
 													"\r",
 													""
 												],
@@ -988,9 +990,21 @@
 											}
 										}
 									],
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
 									"request": {
 										"method": "GET",
 										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
 										"url": {
 											"raw": "https://{{JIRA domain}}.atlassian.net/rest/api/3/issue/{{cas2_issue}}/comment",
 											"protocol": "https",
@@ -1511,12 +1525,50 @@
 						},
 						{
 							"name": "Issue comments",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Catch the randomphrase in the variable \"randomComment\", then set the collection variable \"cas2_newComment\" to the value of \"randomComment\".\r",
+											"let randomComment = pm.collectionVariables.replaceIn(\"{{$randomLoremParagraph}}\");\r",
+											"pm.collectionVariables.set('cas2_newComment', randomComment)\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"//Le scenario de test a executer...\r",
+											"    pm.test(\"Set new comment\", function () {\r",
+											"        pm.expect(pm.collectionVariables.get(\"cas2_currentComment\")).to.not.eql(pm.collectionVariables.get(\"cas2_newComment\"));\r",
+											"    });\r",
+											"//Mise a jour de la variable cas2_currentStatus pour qu'elle corresponde au nouveau Statut. Cela permettra de tester les autres requetes qui suivront.\r",
+											"//pm.collectionVariables.set(\"cas2_currentComment\", pm.collectionVariables.get(\"cas2_newComment\"));\r",
+											"pm.sendRequest(\"https://justingoufo.atlassian.net/rest/api/3/issue/LEARNJIRA-2/comment\", function (err, response) {\r",
+											"    console.log(response)\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "PUT",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n        \"body\": {\r\n            \"type\": \"doc\",\r\n            \"version\": 1,\r\n            \"content\": [\r\n                {\r\n                    \"type\": \"paragraph\",\r\n                    \"content\": [\r\n                        {\r\n                            \"type\": \"text\",\r\n                            \"text\": \"{{$randomLoremParagraph}}\"\r\n                        }\r\n                    ]\r\n                }\r\n            ]\r\n        }\r\n    }\r\n",
+									"raw": "{\r\n        \"body\": {\r\n            \"type\": \"doc\",\r\n            \"version\": 1,\r\n            \"content\": [\r\n                {\r\n                    \"type\": \"paragraph\",\r\n                    \"content\": [\r\n                        {\r\n                            \"type\": \"text\",\r\n                            \"text\": \"{{cas2_newComment}}\"\r\n                        }\r\n                    ]\r\n                }\r\n            ]\r\n        }\r\n    }\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1545,7 +1597,7 @@
 							"response": []
 						}
 					],
-					"description": "1. Récupérer les détails d'un ticket spécifique et vérifier que les données renvoyées sont correctes.\n    \n2. Tester la récupération de tickets en utilisant différents filtres et critères de recherche.",
+					"description": "1. Récupérer les détails d'un ticket spécifique et vérifier que les données renvoyées sont correctes.\n    \n2. Modifier les données du ticket, et vérifier la mise a jour effective de ces données.",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -1754,8 +1806,12 @@
 			"value": "New assignee of issue under test in Case 2"
 		},
 		{
-			"key": "cas2_issueComment",
+			"key": "cas2_currentComment",
 			"value": "Current comment of issue under test in Case 2"
+		},
+		{
+			"key": "cas2_newComment",
+			"value": "New comment of issue under test in Case 2"
 		},
 		{
 			"key": "userAccountName",
@@ -1766,16 +1822,12 @@
 			"value": "List of account ids"
 		},
 		{
-			"key": "cas2_newDuedate",
-			"value": ""
-		},
-		{
 			"key": "cas2_currentDuedate",
-			"value": ""
+			"value": "Current due date of issue under test in Case 2"
 		},
 		{
-			"key": "cas2_newComment",
-			"value": ""
+			"key": "cas2_newDuedate",
+			"value": "New due date of issue under test in Case 2"
 		}
 	]
 }
